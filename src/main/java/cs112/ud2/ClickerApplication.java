@@ -2,6 +2,7 @@ package cs112.ud2;
 
 import javafx.application.Application;  //abstract class used for JavaFX GUI's
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.stage.Stage;              //class for GUI window
 import javafx.scene.Scene;              //class for specific view in GUI window
 import javafx.scene.layout.StackPane;   //class for layout pane, organized back to front
@@ -23,17 +24,21 @@ import java.io.FileNotFoundException;
 public class ClickerApplication extends Application { //inheriting core functionality
     /*** GUI COMPONENTS ***/
     private Button statisticsButton; //renamed button
+    private Button upgradesButton;
+    private Button upgrade1Button;
     private Button pointsButton;
     private Label messageLabel; //moved declaration out of start(), not a local variable now but class-level variable. so scope is all methods here
+    private Label pointsLabel;
     private Rectangle clickerWindow;
     private Rectangle workforceWindow;
     private Rectangle statisticsWindow;
+    private Rectangle pointsBackground;
+    private Rectangle upgradesBackground;
     private Image computer;
     private static final int HEIGHT = 600;
     private static final int LENGTH = 500;
     private int numClicks = 0;
-
-
+    private int numPoints = 0;
 
     /*** DRIVER main ***/
     public static void main(String[] args) {
@@ -44,10 +49,17 @@ public class ClickerApplication extends Application { //inheriting core function
     @Override
     public void start(Stage primaryStage) throws Exception{ //Application automatically calls this method to run (our) main javafx code. passes in primary stage (main window)
         //SETUP COMPONENTS
+
         messageLabel = new Label("");
         StackPane.setAlignment(messageLabel, Pos.TOP_LEFT);
         StackPane.setMargin(messageLabel, new Insets(35,0,0,(int)(2*LENGTH/5-10)));
         messageLabel.setVisible(false);
+
+        pointsLabel = new Label("Points: 0\nPassive Points Per second: 0");
+        pointsLabel.setStyle("-fx-font-weight: bold;");
+        StackPane.setAlignment(pointsLabel, Pos.TOP_LEFT);
+        StackPane.setMargin(pointsLabel, new Insets(10,0,0,20));
+
         FileInputStream input = null;
         try {
             input = new FileInputStream("./src/Images/computer.jpg");
@@ -63,6 +75,17 @@ public class ClickerApplication extends Application { //inheriting core function
 
 
         //"windows"
+        pointsBackground = new Rectangle(0, 0, 160, 45);
+        pointsBackground.setFill(Color.WHITE);
+        StackPane.setAlignment(pointsBackground, Pos.TOP_LEFT);
+        StackPane.setMargin(pointsBackground, new Insets(12,0,0,20));
+
+        upgradesBackground = new Rectangle(0, 0, 200, HEIGHT-45);
+        upgradesBackground.setFill(Color.WHITE);
+        StackPane.setAlignment(upgradesBackground, Pos.TOP_RIGHT);
+        StackPane.setMargin(upgradesBackground, new Insets(35,0,0,10));
+        upgradesBackground.setVisible(false);
+
         clickerWindow = new Rectangle(0, 0, (int)(2*LENGTH/5 - 20), HEIGHT-20);
         clickerWindow.setFill(Color.BLUE);
         StackPane.setAlignment(clickerWindow, Pos.TOP_LEFT);
@@ -85,14 +108,21 @@ public class ClickerApplication extends Application { //inheriting core function
         StackPane.setAlignment(statisticsButton, Pos.TOP_LEFT);
         StackPane.setMargin(statisticsButton, new Insets(10,0,0,(int)(2*LENGTH/5-10)));
         statisticsButton.setPrefWidth(70);
+        Node[] statisticZone = {
+                messageLabel,
+                statisticsWindow
+        };
         /*** NEW ***/ //who the event handler is (which object/class should handle the event) == anonymous class
         statisticsButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
                 messageLabel.setText("Clicks: " + numClicks); //changed message label instead of console output
                 messageLabel.setFont(Font.font("Courier New", FontWeight.LIGHT, FontPosture.REGULAR, 20)); //setting font attribute to message label
-                messageLabel.setVisible(!messageLabel.isVisible());
-                statisticsWindow.setVisible(!statisticsWindow.isVisible());
+                //messageLabel.setVisible(!messageLabel.isVisible());
+                //statisticsWindow.setVisible(!statisticsWindow.isVisible());
+                for (Node i: statisticZone) {
+                    i.setVisible(!i.isVisible());
+                }
             }
         }); /*** NEW ***/ //end of anonymous class
         statisticsButton.setTooltip(new Tooltip("Click this button to change the text above it!"));/*** NEW ***/ //set tooltip attribute, text shows when hovering over button
@@ -106,6 +136,36 @@ public class ClickerApplication extends Application { //inheriting core function
             public void handle(ActionEvent actionEvent) {
                 numClicks+=1;
                 messageLabel.setText("Clicks: " + numClicks);
+                numPoints+=2;
+                pointsLabel.setText("Points: "+numPoints+"\nPassive Points Per second: 0");
+            }
+        });
+
+        upgrade1Button = new Button("Upgrade 1");
+        StackPane.setAlignment(upgrade1Button, Pos.TOP_RIGHT);
+        StackPane.setMargin(upgrade1Button, new Insets(50,10,0,0));
+        upgrade1Button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                System.out.println("Upgrade Purchased");
+            }
+        });
+        upgrade1Button.setVisible(false);
+
+        upgradesButton = new Button("Upgrades &\nBuildings");
+        StackPane.setAlignment(upgradesButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(upgradesButton, new Insets(0,9,0,0));
+        Node[] buildingsZone = {
+                //all nodes this should show and hide
+                upgrade1Button,
+                upgradesBackground
+        };
+        upgradesButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                for (Node i: buildingsZone) {
+                    i.setVisible(!i.isVisible());
+                }
             }
         });
         //
@@ -119,8 +179,13 @@ public class ClickerApplication extends Application { //inheriting core function
         layout.getChildren().add(workforceWindow);
         layout.getChildren().add(statisticsWindow);
         layout.getChildren().add(statisticsButton);
+        layout.getChildren().add(pointsBackground);
+        layout.getChildren().add(upgradesBackground);
         layout.getChildren().add(pointsButton);
+        layout.getChildren().add(upgradesButton);
+        layout.getChildren().add(upgrade1Button);
         layout.getChildren().add(messageLabel);
+        layout.getChildren().add(pointsLabel);
 
         //layout.setAlignment(Pos.CENTER); //modify VBox attributes
 
